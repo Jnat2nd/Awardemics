@@ -1,0 +1,106 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Registered Events{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small fw-bold text-primary mb-1">Your contribution</p>
+      <h1 class="h2 brand-wordmark mb-1">Registered events</h1>
+      <p class="text-muted mb-0">Keep track of the opportunities you joined.</p>
+    </div>
+    <span class="material-symbols-outlined display-6 text-warning" aria-hidden="true">event_available</span>
+  </div>
+
+  {% if registrations %}
+  <div class="row g-4">
+    {% for registration, event in registrations %}
+    <div class="col-12 col-lg-6">
+      <article class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between gap-3">
+            <div>
+              <h2 class="h5 brand-wordmark mb-1">{{ event.name }}</h2>
+              <p class="text-muted mb-3">{{ event.organisation }} · {{ event.location }}</p>
+            </div>
+            <span class="badge text-bg-light align-self-start">{{ event.eventStatus }}</span>
+          </div>
+          <div class="row g-2 small">
+            <div class="col-sm-6"><strong>Event date:</strong> {{ event.date }}</div>
+            <div class="col-sm-6"><strong>Registered:</strong> {{ registration.dateRegistered }}</div>
+            <div class="col-sm-6"><strong>Hours:</strong> {{ registration.hoursVolunteering }}</div>
+            <div class="col-sm-6"><strong>Event ID:</strong> {{ registration.eventID }}</div>
+          </div>
+          {% if registration.eventSpecificDetails %}
+          <p class="small text-muted mt-3 mb-0"><strong>Your details:</strong> {{ registration.eventSpecificDetails }}</p>
+          {% endif %}
+          <div class="d-flex gap-2 mt-4 flex-wrap">
+            <button class="btn btn-outline-primary" type="button"
+                    data-bs-toggle="modal" data-bs-target="#event-{{ registration.eventID }}">
+              View event
+            </button>
+            <button class="btn btn-outline-danger" type="button"
+                    data-bs-toggle="modal" data-bs-target="#unregister-{{ registration.eventID }}">
+              Unregister
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+    <div class="modal fade" id="event-{{ registration.eventID }}" tabindex="-1"
+         aria-labelledby="event-label-{{ registration.eventID }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+          <div class="modal-header">
+            <h2 class="modal-title h4 brand-wordmark" id="event-label-{{ registration.eventID }}">{{ event.name }}</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {% if event.image %}
+            <img src="{{ event.image }}" class="img-fluid rounded-3 mb-3 event-detail-image" alt="{{ event.name }}">
+            {% endif %}
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6"><strong>Organisation:</strong> {{ event.organisation }}</div>
+              <div class="col-sm-6"><strong>Location:</strong> {{ event.location }}</div>
+              <div class="col-sm-6"><strong>Date:</strong> {{ event.date }}</div>
+              <div class="col-sm-6"><strong>Hours:</strong> {{ event.hours }}</div>
+              <div class="col-sm-6"><strong>Status:</strong> {{ event.eventStatus }}</div>
+              <div class="col-sm-6"><strong>Spots left:</strong> {{ event.numberOfSlots - event.numberRegistered }}</div>
+            </div>
+            <p class="mb-0">{{ event.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="unregister-{{ registration.eventID }}" tabindex="-1"
+         aria-labelledby="unregister-label-{{ registration.eventID }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+          <div class="modal-header">
+            <h2 class="modal-title h5 brand-wordmark" id="unregister-label-{{ registration.eventID }}">
+              Unregister from {{ event.name }}?
+            </h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            This will remove your registration and make one spot available again.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep registration</button>
+            <form method="post" action="{{ request.url_for('unregister_event_action', event_id=registration.eventID) }}">
+              <button class="btn btn-danger" type="submit">Confirm unregister</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    You have not registered for an event yet.
+    <a href="{{ request.url_for('user_home_view') }}">Browse volunteer events</a> to get started.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

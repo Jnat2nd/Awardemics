@@ -1,16 +1,15 @@
 :root {
-  /* Phase 5 theming: Guide overwrites these from docs/report.md preferences */
-  --brand-name: "FastStarter";
-  --brand-bg: #0c1218;
-  --brand-surface: #f7f4ef;
-  --brand-ink: #14202b;
-  --brand-muted: #6a7a88;
-  --brand-accent: #c45c26;
-  --brand-accent-2: #2a6f6b;
-  --brand-sidebar: #14202b;
-  --brand-sidebar-text: #a8b4bf;
-  --brand-font-display: "Fraunces", Georgia, serif;
-  --brand-font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --brand-name: "Awardemics";
+  --brand-bg: #edf7f6;
+  --brand-surface: #ffffff;
+  --brand-ink: #17324d;
+  --brand-muted: #587086;
+  --brand-accent: #f19953;
+  --brand-accent-2: #2660a4;
+  --brand-sidebar: #2660a4;
+  --brand-sidebar-text: #dcecff;
+  --brand-font-display: "Montserrat", Arial, sans-serif;
+  --brand-font-body: "Liberation Sans", Arial, sans-serif;
   --brand-radius: 0.85rem;
 }
 
@@ -29,8 +28,9 @@ body {
 
 .brand-wordmark {
   font-family: var(--brand-font-display);
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.03em;
+  text-decoration: none;
 }
 
 /* —— Public landing —— */
@@ -40,10 +40,10 @@ body {
   grid-template-rows: auto 1fr auto;
   color: var(--brand-surface);
   background:
-    linear-gradient(160deg, rgba(12, 18, 24, 0.55), rgba(12, 18, 24, 0.82)),
-    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(42, 111, 107, 0.45), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 90% 80%, rgba(196, 92, 38, 0.28), transparent 50%),
-    linear-gradient(180deg, #1a2834 0%, #0c1218 100%);
+    linear-gradient(160deg, rgba(38, 96, 164, 0.78), rgba(23, 50, 77, 0.94)),
+    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(241, 153, 83, 0.45), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 80%, rgba(237, 247, 246, 0.22), transparent 50%),
+    linear-gradient(180deg, #2660a4 0%, #17324d 100%);
   position: relative;
   overflow: hidden;
 }
@@ -57,8 +57,8 @@ body {
       -18deg,
       transparent,
       transparent 48px,
-      rgba(247, 244, 239, 0.025) 48px,
-      rgba(247, 244, 239, 0.025) 49px
+      rgba(237, 247, 246, 0.05) 48px,
+      rgba(237, 247, 246, 0.05) 49px
     );
   pointer-events: none;
 }
@@ -178,9 +178,9 @@ body {
   right: -6%;
   top: 18%;
   background:
-    radial-gradient(circle at 35% 35%, rgba(247, 244, 239, 0.18), transparent 55%),
-    radial-gradient(circle at 70% 70%, rgba(42, 111, 107, 0.5), transparent 60%),
-    rgba(196, 92, 38, 0.15);
+    radial-gradient(circle at 35% 35%, rgba(237, 247, 246, 0.22), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(38, 96, 164, 0.5), transparent 60%),
+    rgba(241, 153, 83, 0.2);
   filter: blur(2px);
   animation: landing-drift 14s ease-in-out infinite alternate;
   pointer-events: none;
@@ -270,4 +270,90 @@ body {
 
 .auth-back:hover {
   color: var(--brand-accent);
+}
+
+.event-browser .text-primary {
+  color: var(--brand-accent-2) !important;
+}
+
+.event-card {
+  border-radius: var(--brand-radius);
+  overflow: hidden;
+}
+
+.event-card-image,
+.event-card-placeholder {
+  height: 170px;
+  object-fit: cover;
+}
+
+.event-card-placeholder {
+  color: var(--brand-accent-2);
+  background: color-mix(in srgb, var(--brand-bg) 78%, var(--brand-accent-2));
+}
+
+.event-detail-image {
+  max-height: 280px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.event-card .btn-primary,
+.modal .btn-primary {
+  background: var(--brand-accent-2);
+  border-color: var(--brand-accent-2);
+}
+
+.public-page {
+  min-height: 100vh;
+  background: var(--brand-bg);
+  color: var(--brand-ink);
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem clamp(1.25rem, 4vw, 3rem);
+  background: var(--brand-accent-2);
+}
+
+.public-nav .brand-wordmark,
+.public-nav a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.public-nav > div a:hover {
+  color: var(--brand-accent);
+}
+
+.public-nav .user-welcome {
+  color: var(--brand-accent);
+  font-weight: 700;
+}
+
+.public-page .table thead {
+  background: color-mix(in srgb, var(--brand-accent-2) 12%, #fff);
+}
+
+.table-sort-link {
+  color: var(--brand-ink);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.table-sort-link:hover {
+  color: var(--brand-accent);
+}
+
+.public-page .table tbody tr[role="button"]:hover {
+  background: color-mix(in srgb, var(--brand-accent) 18%, #fff);
+}
+
+.event-card .btn-primary:hover,
+.modal .btn-primary:hover {
+  background: color-mix(in srgb, var(--brand-accent-2) 85%, #000);
+  border-color: color-mix(in srgb, var(--brand-accent-2) 85%, #000);
 }

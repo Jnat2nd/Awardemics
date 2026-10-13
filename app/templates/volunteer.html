@@ -1,0 +1,79 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Volunteer for an Event{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <h1 class="h2 brand-wordmark mb-4">Volunteer for an Event</h1>
+  <form method="get" action="{{ request.url_for('volunteer_view') }}" class="card border-0 shadow-sm p-4 mb-4">
+    <label class="form-label" for="event-search">Search volunteer events</label>
+    <div class="input-group mb-3">
+      <input class="form-control" id="event-search" name="search" type="search"
+             value="{{ search }}" placeholder="Search by event ID, name, location, or organisation">
+      <button class="btn btn-outline-primary" type="submit">
+        <span class="material-symbols-outlined align-middle" aria-hidden="true">search</span>
+        Search
+      </button>
+    </div>
+    {% if search %}
+    <div class="list-group mb-3">
+      {% for result in events %}
+      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+         href="{{ request.url_for('volunteer_view') }}?event_id={{ result.eventID }}">
+        <span><strong>{{ result.name }}</strong><br><small>{{ result.organisation }} · {{ result.location }}</small></span>
+        <span class="badge text-bg-light">ID {{ result.eventID }}</span>
+      </a>
+      {% else %}
+      <div class="alert alert-info mb-0">No volunteer events match “{{ search }}”.</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if event %}
+    <div class="alert alert-info mb-0">
+      <strong>Event ID {{ event.eventID }} · {{ event.name }}</strong><br>
+      {{ event.organisation }} · {{ event.location }}<br>
+      {{ event.date }} · {{ event.hours }} hours · {{ event.numberOfSlots - event.numberRegistered }} spots left
+    </div>
+    {% endif %}
+  </form>
+
+  <form method="post" action="{{ request.url_for('volunteer_action') }}" class="card border-0 shadow-sm p-4">
+    <input type="hidden" name="event_id" value="{{ event_id }}">
+    <label class="form-label" for="hours">Hours volunteering</label>
+    <input class="form-control mb-3" id="hours" name="hours" type="number" min="1"
+           value="{{ hours or '' }}" {% if event_hours %}max="{{ event_hours }}"{% endif %} required>
+    {% if event_hours %}<div class="form-text mb-3">This event lists {{ event_hours }} volunteer hours.</div>{% endif %}
+    <div class="d-flex justify-content-between">
+      <a class="btn btn-outline-secondary" href="{{ request.url_for('user_home_view') }}">Cancel</a>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="{{ request.url_for('volunteer_view') }}">Clear</a>
+        <button class="btn btn-primary" type="submit" {% if not event_id %}disabled{% endif %}>Submit</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if error_message %}
+<div class="modal fade" id="registrationErrorModal" tabindex="-1" aria-labelledby="registrationErrorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0">
+      <div class="modal-header">
+        <h2 class="modal-title h5 brand-wordmark" id="registrationErrorLabel">Registration could not be completed</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">{{ error_message }}</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block subpage_scripts %}
+{% if error_message %}
+<script>
+  new bootstrap.Modal(document.getElementById("registrationErrorModal")).show();
+</script>
+{% endif %}
+{% endblock %}

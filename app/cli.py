@@ -15,7 +15,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import date, timedelta
 from pathlib import Path
+
+from sqlmodel import select
 
 
 def _ensure_models_loaded() -> None:
@@ -47,12 +50,14 @@ def cmd_init(args: argparse.Namespace) -> None:
 
 
 def cmd_seed(args: argparse.Namespace) -> None:
-    """Insert demo users.
+    """Insert demo users and volunteer events.
 
     bob / bobpass       (regular_user)
     admin / adminpass   (admin)
     """
     from app.database import ensure_db_and_tables, get_cli_session
+    from app.models.volunteer_event import VolunteerEvent
+    from app.models.student import Student
     from app.repositories.user import UserRepository
     from app.schemas.user import AdminCreate, RegularUserCreate
     from app.utilities.security import encrypt_password
@@ -86,7 +91,173 @@ def cmd_seed(args: argparse.Namespace) -> None:
             print(f"  create {username} ({role})")
             created += 1
 
-    print(f"Seed done — created {created}, skipped {skipped}.")
+        demo_events = [
+            (
+                "Community Garden Day",
+                "UWI Green Campus",
+                "St. Augustine",
+                "Help prepare beds and plant vegetables for the campus community garden.",
+                "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e",
+                20,
+                3,
+                "upcoming",
+            ),
+            (
+                "Beach Cleanup",
+                "Clean Coast T&T",
+                "Tyrico Bay",
+                "Collect litter and sort recyclable materials along the shoreline.",
+                "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5",
+                35,
+                4,
+                "upcoming",
+            ),
+            (
+                "Senior Digital Support",
+                "Community Link",
+                "San Fernando",
+                "Guide seniors through basic smartphone and online safety skills.",
+                "https://images.unsplash.com/photo-1556761175-b413da4baf72",
+                12,
+                2,
+                "upcoming",
+            ),
+            (
+                "Food Bank Packing",
+                "Hope Food Bank",
+                "Port of Spain",
+                "Pack and label food parcels for families receiving community assistance.",
+                "https://images.unsplash.com/photo-1593113598332-cd288d649433",
+                25,
+                3,
+                "upcoming",
+            ),
+            (
+                "Animal Shelter Care",
+                "Paws and Claws",
+                "Arima",
+                "Assist with feeding, cleaning, and enrichment activities for shelter animals.",
+                "https://images.unsplash.com/photo-1601758228041-f3b2795255f1",
+                15,
+                4,
+                "upcoming",
+            ),
+            (
+                "Literacy Book Drive",
+                "ReadTT",
+                "Chaguanas",
+                "Sort donated books and prepare reading packs for primary schools.",
+                "https://images.unsplash.com/photo-1495446815901-a7297e633e8d",
+                18,
+                2,
+                "upcoming",
+            ),
+            (
+                "Mangrove Restoration",
+                "Blue Carbon T&T",
+                "Caroni Swamp",
+                "Support mangrove planting and learn about protecting coastal ecosystems.",
+                "https://images.unsplash.com/photo-1473445361085-b9a07f55608b",
+                22,
+                5,
+                "upcoming",
+            ),
+            (
+                "Youth Sports Clinic",
+                "Sport for All",
+                "Tunapuna",
+                "Help coordinate activities and registration at a youth sports clinic.",
+                "https://images.unsplash.com/photo-1461896836934-ffe607ba8211",
+                30,
+                3,
+                "upcoming",
+            ),
+            (
+                "Community Health Fair",
+                "Healthy Communities",
+                "Couva",
+                "Welcome visitors and support information booths at a local health fair.",
+                "https://images.unsplash.com/photo-1505751172876-fa1923c5c528",
+                20,
+                4,
+                "upcoming",
+            ),
+            (
+                "Clothes Sorting Workshop",
+                "Second Chance T&T",
+                "Laventille",
+                "Sort donated clothing into packages for families and shelters.",
+                "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3",
+                16,
+                2,
+                "upcoming",
+            ),
+        ]
+        existing_event_names = {
+            event.name for event in session.exec(select(VolunteerEvent)).all()
+        }
+        event_created = 0
+        for index, (
+            name,
+            organisation,
+            location,
+            description,
+            image,
+            slots,
+            hours,
+            event_status,
+        ) in enumerate(demo_events, start=1):
+            if name in existing_event_names:
+                continue
+            session.add(
+                VolunteerEvent(
+                    eventID=index,
+                    name=name,
+                    organisation=organisation,
+                    location=location,
+                    description=description,
+                    image=image,
+                    date=date.today() + timedelta(days=index * 3),
+                    numberOfSlots=slots,
+                    numberRegistered=0,
+                    hours=hours,
+                    eventStatus=event_status,
+                )
+            )
+            event_created += 1
+        if event_created:
+            session.commit()
+
+        bob = repo.get_by_username("bob")
+        existing_student_ids = {
+            student.studentID for student in session.exec(select(Student)).all()
+        }
+        student_created = 0
+        for student_id in range(1, 101):
+            if student_id in existing_student_ids:
+                continue
+            session.add(
+                Student(
+                    studentID=student_id,
+                    userID=bob.id if student_id == 1 and bob is not None else None,
+                    name=f"Student {student_id:03d}",
+                    faculty=["Engineering", "Humanities", "Science", "Social Sciences"][student_id % 4],
+                    degreeLevel="Undergraduate",
+                    year=(student_id % 4) + 1,
+                    totalHours=max(0, 420 - student_id * 3),
+                    rank=student_id,
+                    awardCount=(student_id % 8),
+                    latestEvent="Community Volunteer Day",
+                    latestAward="Community Champion" if student_id % 5 == 0 else "",
+                )
+            )
+            student_created += 1
+        if student_created:
+            session.commit()
+
+    print(f"Seed users done — created {created}, skipped {skipped}.")
+    print(f"Seed events done — created {event_created}, skipped {len(demo_events) - event_created}.")
+    print(f"Seed students done — created {student_created}.")
     print("Login with bob/bobpass or admin/adminpass")
 
 

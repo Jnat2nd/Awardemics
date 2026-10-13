@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+<main class="public-page">
+  <nav class="public-nav">
+    <a class="brand-wordmark" href="{{ url_for('index_view') }}">Awardemics</a>
+    <div class="d-flex gap-3 align-items-center">
+      <a href="{{ url_for('leaderboard_view') }}">Leaderboard</a>
+      {% if user_logged_in %}
+      <a href="{{ url_for('user_home_view') }}">Events</a>
+      <a href="{{ url_for('volunteer_view') }}">Volunteer</a>
+      <a href="{{ url_for('registered_events_view') }}">Registered events</a>
+      <span class="user-welcome">Welcome, {{ user.username }}</span>
+      <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+      <a href="{{ url_for('login_view') }}">Sign in</a>
+      {% endif %}
+    </div>
+  </nav>
+  <section class="container py-5">
+    <p class="text-uppercase small fw-bold text-primary mb-1">Celebrate community impact</p>
+    <h1 class="h2 brand-wordmark">Leaderboard</h1>
+    <form class="row g-2 my-4" method="get" action="{{ request.url_for('leaderboard_view') }}">
+      <div class="col-md-6">
+        <label class="visually-hidden" for="leaderboard-search">Search student</label>
+        <input class="form-control" id="leaderboard-search" name="search" value="{{ search }}" placeholder="Search by student name">
+      </div>
+      <div class="col-md-4">
+        <label class="visually-hidden" for="faculty">Faculty</label>
+        <select class="form-select" id="faculty" name="faculty">
+          <option value="">All faculties</option>
+          {% for option in faculties %}
+          <option value="{{ option }}" {% if option == faculty %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+      {% if search or faculty %}
+      <div class="col-12"><a class="btn btn-link px-0" href="{{ request.url_for('leaderboard_view') }}">Clear filters</a></div>
+      {% endif %}
+    </form>
+    <div class="table-responsive rounded-3 shadow-sm bg-white">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            {% for key, label in [("rank", "#"), ("name", "Name"), ("faculty", "Faculty"), ("hours", "Hours"), ("awards", "Awards")] %}
+            {% set next_order = "desc" if sort_by == key and sort_order == "asc" else "asc" %}
+            <th>
+              <a class="table-sort-link" href="{{ request.url_for('leaderboard_view') }}?search={{ search|urlencode }}&faculty={{ faculty|urlencode }}&sort_by={{ key }}&sort_order={{ next_order }}">
+                {{ label }}
+                {% if sort_by == key %}<span class="material-symbols-outlined align-middle" aria-hidden="true">{{ "arrow_upward" if sort_order == "asc" else "arrow_downward" }}</span>{% endif %}
+              </a>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for student in students %}
+        <tr data-bs-toggle="modal" data-bs-target="#student-{{ student.studentID }}" role="button">
+          <td>{{ student.rank }}</td><td>{{ student.name }}</td><td>{{ student.faculty }}</td>
+          <td>{{ student.totalHours }}</td><td>{{ student.awardCount }}</td>
+        </tr>
+        <div class="modal fade" id="student-{{ student.studentID }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0">
+            <div class="modal-header"><h2 class="modal-title h5 brand-wordmark">{{ student.name }}</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+              <p><strong>Faculty:</strong> {{ student.faculty }}</p><p><strong>Rank:</strong> {{ student.rank }}</p>
+              <p><strong>Total hours:</strong> {{ student.totalHours }}</p><p><strong>Latest event:</strong> {{ student.latestEvent }}</p>
+              <p><strong>Latest award:</strong> {{ student.latestAward }}</p>
+            </div>
+          </div></div>
+        </div>
+        {% else %}
+        <tr><td colspan="5" class="text-center py-4">No students match those filters.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+{% endblock %}

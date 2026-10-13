@@ -1,9 +1,92 @@
 {% extends "authenticated-base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Browse Events{% endblock %}
 
 {% block subpage_content %}
-<div class="container-fluid py-2">
-  <h1 class="h4 mb-2">Home</h1>
-  <p class="text-muted mb-0">Workflow screens replace this shell in Phase 5 implement.</p>
+<div class="container-fluid py-2 event-browser">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small fw-bold text-primary mb-1">Make an impact</p>
+      <h1 class="h2 brand-wordmark mb-1">Browse volunteer events</h1>
+      <p class="text-muted mb-0">Find an opportunity that matches your interests.</p>
+    </div>
+    <span class="material-symbols-outlined display-6 text-warning" aria-hidden="true">volunteer_activism</span>
+  </div>
+
+  <form class="d-flex justify-content-end gap-2 mb-4" method="get" action="{{ request.url_for('user_home_view') }}">
+    <div class="event-search-field">
+      <label class="visually-hidden" for="event-search">Search events</label>
+      <input class="form-control" type="search" id="event-search" name="search"
+             value="{{ search }}" placeholder="Search by event name, location, or organisation">
+    </div>
+    <button class="btn btn-outline-primary search-icon-button" type="submit" aria-label="Search events">
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+    </button>
+    {% if search %}
+    <a class="btn btn-link" href="{{ request.url_for('user_home_view') }}">Clear</a>
+    {% endif %}
+  </form>
+
+  {% if events %}
+  <div class="row g-4">
+    {% for event in events %}
+    <div class="col-12 col-md-6 col-xl-4">
+      <article class="card event-card h-100 border-0 shadow-sm">
+        {% if event.image %}
+        <img src="{{ event.image }}" class="card-img-top event-card-image" alt="{{ event.name }}">
+        {% else %}
+        <div class="event-card-placeholder d-flex align-items-center justify-content-center">
+          <span class="material-symbols-outlined display-4" aria-hidden="true">volunteer_activism</span>
+        </div>
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 brand-wordmark">{{ event.name }}</h2>
+          <p class="small text-muted mb-2">{{ event.organisation }} · {{ event.location }}</p>
+          <div class="d-flex flex-wrap gap-2 small mb-3">
+            <span class="badge text-bg-light">{{ event.date }}</span>
+            <span class="badge text-bg-light">{{ event.hours }} hours</span>
+            <span class="badge text-bg-light">{{ event.numberOfSlots - event.numberRegistered }} spots left</span>
+          </div>
+          <button class="btn btn-primary mt-auto" data-bs-toggle="modal" data-bs-target="#event-{{ event.eventID }}">
+            View details
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <div class="modal fade" id="event-{{ event.eventID }}" tabindex="-1" aria-labelledby="event-label-{{ event.eventID }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+          <div class="modal-header">
+            <h2 class="modal-title h4 brand-wordmark" id="event-label-{{ event.eventID }}">{{ event.name }}</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {% if event.image %}
+            <img src="{{ event.image }}" class="img-fluid rounded-3 mb-3 event-detail-image" alt="{{ event.name }}">
+            {% endif %}
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6"><strong>Event ID:</strong> {{ event.eventID }}</div>
+              <div class="col-sm-6"><strong>Organisation:</strong> {{ event.organisation }}</div>
+              <div class="col-sm-6"><strong>Location:</strong> {{ event.location }}</div>
+              <div class="col-sm-6"><strong>Date:</strong> {{ event.date }}</div>
+              <div class="col-sm-6"><strong>Hours:</strong> {{ event.hours }}</div>
+              <div class="col-sm-6"><strong>Status:</strong> {{ event.eventStatus }}</div>
+              <div class="col-sm-6"><strong>Spots left:</strong> {{ event.numberOfSlots - event.numberRegistered }}</div>
+            </div>
+            <p class="mb-0">{{ event.description }}</p>
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-primary" href="{{ request.url_for('volunteer_view') }}?event_id={{ event.eventID }}">Volunteer</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    {% if search %}No events match “{{ search }}”. Try another search.{% else %}No volunteer events are listed yet. Check back soon.{% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

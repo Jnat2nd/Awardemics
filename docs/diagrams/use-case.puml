@@ -1,0 +1,29 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam actorBorderColor #1B365D
+skinparam actorFontColor #1E232D
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B365D
+skinparam usecaseFontColor #1E232D
+skinparam rectangleBorderColor #1B365D
+skinparam rectangleBackgroundColor #F8FAFC
+skinparam arrowColor #1B365D
+
+actor "Student" as Student
+
+rectangle "Student Awards" {
+  usecase "Browse listed volunteer events" as Browse_listed_volunteer_events
+  usecase "Register for listed events" as Register_for_listed_events
+  usecase "View & filter leaderboards" as View_filter_leaderboards
+}
+
+actor "Public" as Public
+
+Student --> Browse_listed_volunteer_events
+Student --> Register_for_listed_events
+Register_for_listed_events ..> Browse_listed_volunteer_events : <<include>>
+Student --> View_filter_leaderboards
+View_filter_leaderboards <-- Public
+
+@enduml

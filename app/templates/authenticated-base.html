@@ -4,7 +4,7 @@
 <style>
     body {
         overflow-x: hidden;
-        background: #f4f6f8;
+        background: var(--brand-bg);
     }
 
     #wrapper {
@@ -16,6 +16,7 @@
         min-width: 250px;
         max-width: 250px;
         min-height: 100vh;
+        align-self: stretch;
         transition: all 0.3s;
         background: var(--brand-sidebar);
         color: #fff;
@@ -27,14 +28,16 @@
 
     #sidebar .nav-link {
         color: var(--brand-sidebar-text);
-        font-weight: 500;
+        font-weight: 700;
+        opacity: 0.88;
     }
 
     #sidebar .nav-link:hover,
     #sidebar .nav-link.active {
         color: #fff;
-        background-color: color-mix(in srgb, var(--brand-accent) 55%, #000);
+        background-color: color-mix(in srgb, var(--brand-accent) 78%, var(--brand-sidebar));
         border-radius: 0.5rem;
+        opacity: 1;
     }
 
     #sidebar .brand-wordmark {
@@ -50,11 +53,51 @@
         transition: all 0.3s;
         display: flex;
         flex-direction: column;
-        background-color: #f4f6f8;
+        background-color: var(--brand-bg);
     }
 
     .navbar {
         border-bottom: 1px solid #dee2e6;
+    }
+
+    .topbar-logout {
+        border-radius: 0.5rem;
+        color: var(--brand-accent);
+        font-weight: 700;
+        padding: 0.45rem 0.65rem;
+        text-decoration: none;
+    }
+
+    .topbar-logout:hover {
+        color: #fff;
+        background-color: var(--brand-accent-2);
+    }
+
+    .logout-link {
+        color: var(--brand-accent) !important;
+    }
+
+    .logout-link:hover {
+        color: #dc3545 !important;
+        background-color: var(--brand-bg) !important;
+    }
+
+    .event-search-field {
+        width: min(100%, 28rem);
+    }
+
+    .search-icon-button {
+        color: var(--brand-accent-2);
+        border-color: var(--brand-accent-2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-icon-button:hover {
+        color: #fff;
+        background: var(--brand-accent-2);
+        border-color: var(--brand-accent-2);
     }
 </style>
 {% block additional_styles %}{% endblock %}
@@ -62,8 +105,8 @@
 
 {% block content %}
 <div id="wrapper">
-    <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <div class="brand-wordmark">FastStarter</div>
+    <nav id="sidebar" class="p-3 d-flex flex-column">
+        <a class="brand-wordmark" href="{{ url_for('index_view') }}">Awardemics</a>
 
         <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
             <li class="nav-item">
@@ -73,10 +116,25 @@
                     Home
                 </a>
             </li>
-            <li class="nav-item mt-auto">
-                <a class="nav-link d-flex align-items-center text-danger" href="{{ url_for('logout') }}">
-                    <span class="material-symbols-outlined me-2">logout</span>
-                    Logout
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/volunteer') }}"
+                   href="{{ url_for('volunteer_view') }}">
+                    <span class="material-symbols-outlined me-2">volunteer_activism</span>
+                    Volunteer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/leaderboard') }}"
+                   href="{{ url_for('leaderboard_view') }}">
+                    <span class="material-symbols-outlined me-2">leaderboard</span>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/registered-events') }}"
+                   href="{{ url_for('registered_events_view') }}">
+                    <span class="material-symbols-outlined me-2">event_available</span>
+                    Registered events
                 </a>
             </li>
         </ul>
@@ -89,6 +147,10 @@
             </button>
             <div class="ms-auto d-flex align-items-center gap-3">
                 <span class="fw-semibold">Welcome, {{ user.username }}</span>
+                <a class="topbar-logout" href="{{ url_for('logout') }}">
+                    <span class="material-symbols-outlined align-middle" aria-hidden="true">logout</span>
+                    Logout
+                </a>
             </div>
         </nav>
 

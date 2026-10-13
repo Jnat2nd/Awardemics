@@ -1,0 +1,16 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Registration Complete{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <div class="card border-0 shadow-sm p-5 text-center">
+    <span class="material-symbols-outlined display-3 text-success" aria-hidden="true">check_circle</span>
+    <h1 class="h2 brand-wordmark mt-3">Registration Complete</h1>
+    <p>Event {{ registration.eventID }} is now on your volunteer record.</p>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <a class="btn btn-primary" href="{{ request.url_for('registered_events_view') }}">View registered events</a>
+      <a class="btn btn-outline-secondary" href="{{ request.url_for('user_home_view') }}">Return to events</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
