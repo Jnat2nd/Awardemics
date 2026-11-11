@@ -317,6 +317,28 @@ def cmd_report(args: argparse.Namespace) -> None:
     print(format_report(verify()))
 
 
+def cmd_test_report(args: argparse.Namespace) -> None:
+    """Refresh the rolling test report; export its PDF only when requested."""
+    from app.test_report_pdf import export_report, update_report
+
+    kwargs = {
+        "name": args.name,
+        "student_id": args.student_id,
+        "report_path": None if args.src is None else Path(args.src),
+        "output": None if args.output is None else Path(args.output),
+        "postman_collection": args.postman_collection,
+        "unit_report_screenshot": args.unit_report_screenshot,
+        "integration_report_screenshot": args.integration_report_screenshot,
+        "postman_report_screenshot": args.postman_report_screenshot,
+    }
+    result = export_report(**kwargs) if args.export else update_report(**{
+        key: value for key, value in kwargs.items() if key != "output"
+    })
+    print(f"Test report Markdown: {result.markdown_path.as_posix()}")
+    if result.pdf_path:
+        print(f"Test report PDF: {result.pdf_path.as_posix()}")
+
+
 def cmd_transcripts(args: argparse.Namespace) -> None:
     """Package agent-written markdown under docs/transcripts/ (+ zip)."""
     from app.transcript_export import package_transcripts
@@ -441,6 +463,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_report.add_argument("--src", default=None, help="Markdown path (default: docs/report.md)")
     p_report.add_argument("--output", default=None, help="PDF path (default: docs/report.pdf)")
     p_report.set_defaults(func=cmd_report)
+
+    p_test_report = sub.add_parser(
+        "test-report",
+        help="Refresh docs/Test_Report.md; use --export to also write its PDF",
+    )
+    p_test_report.add_argument("--name", required=True, help="Name in the rolling report")
+    p_test_report.add_argument("--id", dest="student_id", required=True, help="ID in the report")
+    p_test_report.add_argument("--src", default=None, help="Markdown path (default: docs/Test_Report.md)")
+    p_test_report.add_argument("--output", default=None, help="PDF path (default: docs/Test_Report.pdf)")
+    p_test_report.add_argument("--export", action="store_true", help="Also export the PDF")
+    p_test_report.add_argument("--postman-collection", default=None)
+    p_test_report.add_argument("--unit-report-screenshot", default=None)
+    p_test_report.add_argument("--integration-report-screenshot", default=None)
+    p_test_report.add_argument("--postman-report-screenshot", default=None)
+    p_test_report.set_defaults(func=cmd_test_report)
 
     p_transcripts = sub.add_parser(
         "transcripts",

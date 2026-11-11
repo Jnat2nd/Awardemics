@@ -1,0 +1,30 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- C:\Users\jason\Documents\Awardemics\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\jason\Documents\Awardemics
+configfile: pyproject.toml
+plugins: anyio-4.16.0, asyncio-1.4.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 13 items
+
+tests/integration/test_awardemics_routes.py::test_it_ev_01_authenticated_event_search_and_modal PASSED [  7%]
+tests/integration/test_awardemics_routes.py::test_it_rg_01_volunteer_lookup_and_invalid_event PASSED [ 15%]
+tests/integration/test_awardemics_routes.py::test_it_rg_01_registration_persists_once_and_is_listed PASSED [ 23%]
+tests/integration/test_awardemics_routes.py::test_it_rg_02_duplicate_registration_does_not_consume_slot PASSED [ 30%]
+tests/integration/test_awardemics_routes.py::test_it_rg_03_rejected_registration_does_not_write_or_increment[full_event-full_event_id-1] PASSED [ 38%]
+tests/integration/test_awardemics_routes.py::test_it_rg_03_rejected_registration_does_not_write_or_increment[hours_below_minimum-available_event_id-0] PASSED [ 46%]
+tests/integration/test_awardemics_routes.py::test_it_rg_03_rejected_registration_does_not_write_or_increment[hours_above_event_limit-available_event_id-5] PASSED [ 53%]
+tests/integration/test_awardemics_routes.py::test_it_rg_03_rejected_registration_does_not_write_or_increment[unknown_event-None-1] PASSED [ 61%]
+tests/integration/test_awardemics_routes.py::test_it_rg_04_unauthenticated_student_routes_show_no_personal_data_or_mutation PASSED [ 69%]
+tests/integration/test_awardemics_routes.py::test_it_rg_05_unregister_redirects_deletes_registration_and_releases_slot PASSED [ 76%]
+tests/integration/test_awardemics_routes.py::test_it_lb_01_public_leaderboard_filters_and_sorts PASSED [ 84%]
+tests/integration/test_awardemics_routes.py::test_it_lb_02_student_modal_has_public_fields_not_registration_details PASSED [ 92%]
+tests/integration/test_awardemics_routes.py::test_it_lb_02_public_leaderboard_does_not_require_authentication PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\jason\Documents\Awardemics\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 13 passed, 1 warning in 1.89s ========================

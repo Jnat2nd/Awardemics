@@ -1,0 +1,35 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- C:\Users\jason\Documents\Awardemics\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\jason\Documents\Awardemics
+configfile: pyproject.toml
+plugins: anyio-4.16.0, asyncio-1.4.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 24 items
+
+tests/unit/test_leaderboard_service.py::test_view_leaderboard_strips_filters_and_delegates_sorting[  Avery  -  Engineering -hours-desc] PASSED [  4%]
+tests/unit/test_leaderboard_service.py::test_view_leaderboard_strips_filters_and_delegates_sorting[--rank-asc] PASSED [  8%]
+tests/unit/test_leaderboard_service.py::test_list_faculties_delegates_to_repository PASSED [ 12%]
+tests/unit/test_registered_event_service.py::test_register_rejects_unknown_event PASSED [ 16%]
+tests/unit/test_registered_event_service.py::test_register_rejects_user_without_student_mapping PASSED [ 20%]
+tests/unit/test_registered_event_service.py::test_register_rejects_duplicate_without_consuming_slot PASSED [ 25%]
+tests/unit/test_registered_event_service.py::test_register_rejects_full_event_without_consuming_slot PASSED [ 29%]
+tests/unit/test_registered_event_service.py::test_register_rejects_hours_outside_event_range[0-Hours must be between 1 and 4.] PASSED [ 33%]
+tests/unit/test_registered_event_service.py::test_register_rejects_hours_outside_event_range[5-Hours must be between 1 and 4.] PASSED [ 37%]
+tests/unit/test_registered_event_service.py::test_register_creates_correct_registration_and_increments_event[1] PASSED [ 41%]
+tests/unit/test_registered_event_service.py::test_register_creates_correct_registration_and_increments_event[4] PASSED [ 45%]
+tests/unit/test_registered_event_service.py::test_list_for_user_returns_empty_when_user_has_no_student_mapping PASSED [ 50%]
+tests/unit/test_registered_event_service.py::test_list_for_user_delegates_with_student_id PASSED [ 54%]
+tests/unit/test_registered_event_service.py::test_unregister_deletes_existing_registration_and_safely_decrements[2-1-1] PASSED [ 58%]
+tests/unit/test_registered_event_service.py::test_unregister_deletes_existing_registration_and_safely_decrements[0-0-0] PASSED [ 62%]
+tests/unit/test_registered_event_service.py::test_unregister_missing_registration_does_not_delete_or_decrement PASSED [ 66%]
+tests/unit/test_volunteer_event_service.py::test_browse_events_numeric_search_uses_id_lookup[101-event0] PASSED [ 70%]
+tests/unit/test_volunteer_event_service.py::test_browse_events_numeric_search_uses_id_lookup[ 101 -event1] PASSED [ 75%]
+tests/unit/test_volunteer_event_service.py::test_browse_events_numeric_search_returns_empty_for_unknown_event PASSED [ 79%]
+tests/unit/test_volunteer_event_service.py::test_browse_events_text_search_uses_upcoming_list[build] PASSED [ 83%]
+tests/unit/test_volunteer_event_service.py::test_browse_events_text_search_uses_upcoming_list[] PASSED [ 87%]
+tests/unit/test_volunteer_event_service.py::test_find_event_delegates_trimmed_id_name_or_unknown_reference[101-repository_result0] PASSED [ 91%]
+tests/unit/test_volunteer_event_service.py::test_find_event_delegates_trimmed_id_name_or_unknown_reference[ Community Build -repository_result1] PASSED [ 95%]
+tests/unit/test_volunteer_event_service.py::test_find_event_delegates_trimmed_id_name_or_unknown_reference[unknown-None] PASSED [100%]
+
+============================= 24 passed in 0.40s ==============================
