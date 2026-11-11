@@ -148,7 +148,7 @@ def cmd_seed(args: argparse.Namespace) -> None:
                 "Chaguanas",
                 "Sort donated books and prepare reading packs for primary schools.",
                 "https://images.unsplash.com/photo-1495446815901-a7297e633e8d",
-                18,
+                0,
                 2,
                 "upcoming",
             ),
