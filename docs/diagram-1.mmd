@@ -1,0 +1,47 @@
+erDiagram
+  VOLUNTEER_EVENT ||--o{ REGISTERED_EVENT : has
+  STUDENT ||--o{ REGISTERED_EVENT : makes
+
+  VOLUNTEER_EVENT {
+    int eventID PK
+    string name
+    string organisation
+    string location
+    string description
+    string image
+    date date
+    int numberOfSlots
+    int numberRegistered
+    int hours
+    string eventStatus
+  }
+
+  STUDENT {
+    int studentID PK
+    string name
+    string faculty
+    string degreeLevel
+    int year
+    int totalHours
+    int rank
+    int awardCount
+    string latestEvent
+    string latestAward
+  }
+
+  REGISTERED_EVENT {
+    int eventID PK, FK
+    int studentID PK, FK
+    date dateRegistered
+    int hoursVolunteering
+    string eventSpecificDetails
+  }
+
+  LEADERBOARD {
+    int listingID PK
+    string studentName
+    string studentFaculty
+    int totalHours
+    int rank
+    int awardCount
+  }

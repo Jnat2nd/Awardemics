@@ -1,0 +1,676 @@
+{
+  "info": {
+    "name": "Awardemics - Render HTML/Form QA (v2.1)",
+    "description": "Import-ready v2.1 collection for the Render deployment. The application exposes server-rendered HTML/form workflows, not dedicated JSON REST resources. Clear the domain cookie jar before folder 01, then run folders 02 and 03 in order. Login and unregister disable redirect following so their 303 responses and headers remain observable. Use only a disposable linked-Student account and fixture events; credentials and cookies are never stored here. Live execution status is recorded in docs/testing/POSTMAN_TEST_TRACEABILITY.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 — Public / read-only smoke tests",
+      "item": [
+        {
+          "name": "API-SM-01 · Health is healthy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"JSON health contract\", () => { pm.expect(pm.response.json()).to.have.property(\"ok\", true); });"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-LB-01 · Public leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/leaderboard",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"HTML response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/html\"); });",
+                  "pm.test(\"Public leaderboard table\", () => { const s=pm.response.text(); pm.expect(s).to.include(\"Leaderboard\"); pm.expect(s).to.include(\"<table\"); pm.expect(s).to.include(\"Faculty\"); pm.expect(s).to.include(\"Hours\"); });"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-LB-02 · Student name search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/leaderboard?search={{searchTerm}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"HTML response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/html\"); });",
+                  "pm.test(\"Search only matches student names\", () => { const q=(pm.environment.get(\"searchTerm\")||\"\").toLowerCase(); pm.expect(q,\"Set searchTerm to a student name fragment from seeded data\").not.to.equal(\"\"); const rows=[...pm.response.text().matchAll(/<tr data-bs-toggle=\"modal\"[^>]*>([\\s\\S]*?)<\\/tr>/g)].map(m=>m[1]); pm.expect(rows.length,\"Expected at least one matching seeded student\").to.be.above(0); rows.forEach(row => { const cells=[...row.matchAll(/<td>([^<]*)<\\/td>/g)].map(m=>m[1]); pm.expect((cells[1]||\"\").toLowerCase()).to.include(q); }); });"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-LB-03 · Faculty filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/leaderboard?faculty={{faculty}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"HTML response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/html\"); });",
+                  "pm.test(\"Rows have selected faculty\", () => {const f=pm.environment.get(\"faculty\");pm.expect(f,\"Set faculty to a value present in seeded students\").not.to.be.empty;const rows=[...pm.response.text().matchAll(/<tr data-bs-toggle=\"modal\"[^>]*>([\\s\\S]*?)<\\/tr>/g)];pm.expect(rows.length).to.be.above(0);rows.forEach(m=>{const cells=[...m[1].matchAll(/<td>([^<]*)<\\/td>/g)].map(v=>v[1]);pm.expect(cells[2]).to.equal(f);});});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-LB-04 · Sort by hours descending",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/leaderboard?sort_by=hours&sort_order=desc",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Hours sorted numerically descending\", () => {const rows=[...pm.response.text().matchAll(/<tr data-bs-toggle=\"modal\"[^>]*>([\\s\\S]*?)<\\/tr>/g)];const vals=rows.map(m=>[...m[1].matchAll(/<td>([^<]*)<\\/td>/g)].map(v=>v[1])).map(c=>Number(c[3]));pm.expect(vals.length,\"Seed at least two student rows\").to.be.above(1);pm.expect(vals.every(Number.isFinite)).to.be.true;for(let i=1;i<vals.length;i++)pm.expect(vals[i-1]).to.be.at.least(vals[i]);});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-LB-05 · No-match search displays empty state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/leaderboard?search=zzzz_unique_no_match_987654321",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Empty state shown\", () => pm.expect(pm.response.text()).to.include(\"No students match those filters.\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-EV-01 · Anonymous registration access blocked",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer",
+            "description": "Uses a request without a cookie. Run in an isolated Postman session BEFORE login. Custom 401 handler may render a 200 template; assert content is protected."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"No anonymous registration form\", () => { const s=pm.response.text(); pm.expect(s).not.to.include(\"name=\\\"hours\\\"\"); });",
+                  "pm.test(\"Observed HTTP status documented\", () => { pm.expect(pm.response.code).to.be.oneOf([200,401,403,303]); });"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ],
+      "description": "Clear access_token cookies for faststarter-9c75.onrender.com and run this folder anonymously. The custom 401 handler may return HTTP 200; assertions check protected content is absent."
+    },
+    {
+      "name": "02 — Authenticated browsing and form validation",
+      "item": [
+        {
+          "name": "AUTH-01 · Login (cookie + redirect)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/login",
+            "description": "Form login. Postman cookie jar should retain HttpOnly access_token for later requests. Disable redirect following for this request.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{testUsername}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "for (const k of [\"testUsername\",\"testPassword\"]) { if (!pm.environment.get(k)) throw new Error(\"Set non-secret Postman environment field \" + k + \" before running login\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login redirects\", () => pm.response.to.have.status(303));",
+                  "pm.test(\"Access cookie is issued\", () => { const c=pm.response.headers.get(\"Set-Cookie\") || \"\"; pm.expect(c).to.include(\"access_token=\"); });"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-EV-02 · Browse event cards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/app",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"HTML response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/html\"); });",
+                  "pm.test(\"Authenticated event list\", () => pm.expect(pm.response.text()).to.include(\"Browse volunteer events\"));",
+                  "pm.test(\"Expected fixture event appears\", () => { const name=pm.environment.get(\"expectedEventName\"); if(name) pm.expect(pm.response.text()).to.include(name); });"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-EV-03 · Search event cards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/app?search={{eventSearch}}",
+            "description": "Set eventSearch to a distinctive event name/location/organisation; expectedEventName should be shown if it matches."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Search interface and cards rendered\",()=>{const t=pm.response.text();pm.expect(t).to.include(\"Search by event name\");const expected=pm.environment.get(\"expectedEventName\");if(expected)pm.expect(t).to.include(expected);});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-EV-04 · Selected event form prefilled",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer?event_id={{eventID}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get(\"eventID\"); if (!id || id.startsWith(\"SET_\")) throw new Error(\"Set eventID to an available volunteer event ID before running this request\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"HTML response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/html\"); });",
+                  "pm.test(\"Event ID selected\", () => {const id=pm.environment.get(\"eventID\");const s=pm.response.text();pm.expect(s).to.include('name=\"event_id\" value=\"'+id+'\"');pm.expect(s).to.include('name=\"hours\"');});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-EV-05 · Unknown event returns 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer?event_id={{invalidEventID}}",
+            "description": "invalidEventID must be an integer ID absent from seeded database."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unknown event 404\",()=>pm.response.to.have.status(404));",
+                  "pm.test(\"JSON error response\", () => pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"application/json\"));",
+                  "pm.test(\"Not-found detail\", () => pm.expect(pm.response.json()).to.have.property(\"detail\", \"Volunteer event not found.\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-01 · Reject zero volunteer hours",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer",
+            "description": "Run before successful registration so duplicate prevention does not mask validation.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "event_id",
+                  "value": "{{eventID}}",
+                  "type": "text"
+                },
+                {
+                  "key": "hours",
+                  "value": "0",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get(\"eventID\"); if (!id || id.startsWith(\"SET_\")) throw new Error(\"Set eventID to an available volunteer event ID before running this request\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Bad hours HTTP 400\",()=>pm.response.to.have.status(400));",
+                  "pm.test(\"Hours error shown\",()=>pm.expect(pm.response.text()).to.include(\"Hours must be between 1\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-02 · Reject non-existent event registration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer",
+            "description": "Uses an integer event ID absent from DB.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "event_id",
+                  "value": "{{invalidEventID}}",
+                  "type": "text"
+                },
+                {
+                  "key": "hours",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unknown event rejected\",()=>pm.response.to.have.status(400));",
+                  "pm.test(\"Explained error\",()=>pm.expect(pm.response.text()).to.include(\"The selected volunteer event does not exist\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-03 · Full event registration blocked",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer",
+            "description": "Requires fullEventID fixture with numberRegistered >= numberOfSlots and test student not already registered.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "event_id",
+                  "value": "{{fullEventID}}",
+                  "type": "text"
+                },
+                {
+                  "key": "hours",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const full = pm.environment.get(\"fullEventID\"); if (!full || full.startsWith(\"SET_\")) throw new Error(\"Set fullEventID to an actually full fixture event before running this request\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Full event rejected\",()=>pm.response.to.have.status(400));",
+                  "pm.test(\"Full capacity error\",()=>pm.expect(pm.response.text()).to.include(\"This volunteer event is full\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ],
+      "description": "Run after folder 01. Login uses the Postman cookie jar; do not add Authorization or paste cookies. The account must map to a Student row."
+    },
+    {
+      "name": "03 — Stateful registration lifecycle (run in order)",
+      "item": [
+        {
+          "name": "API-RG-04 · Successful registration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer",
+            "description": "Requires eventID open with space and the linked test student not already registered. Returns HTML 200, not JSON 201.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "event_id",
+                  "value": "{{eventID}}",
+                  "type": "text"
+                },
+                {
+                  "key": "hours",
+                  "value": "{{validHours}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get(\"eventID\"); if (!id || id.startsWith(\"SET_\")) throw new Error(\"Set eventID to an available volunteer event ID before running this request\");",
+                  "const h=Number(pm.environment.get(\"validHours\")); if(!Number.isInteger(h)||h<1)throw new Error(\"Set validHours to a positive integer <= the selected event hours\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"HTML response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/html\"); });",
+                  "pm.test(\"Registration complete for selected event\",()=>{const s=pm.response.text();pm.expect(s).to.include(\"Registration Complete\");pm.expect(s).to.include(\"Event \"+pm.environment.get(\"eventID\"));});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-05 · Registration appears in account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/registered-events",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Registered event appears\",()=>{const s=pm.response.text();const id=pm.environment.get(\"eventID\");pm.expect(s).to.match(new RegExp(\"<strong>Event ID:</strong>\\\\s*\"+id+\"(?:\\\\D|$)\"));});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-06 · Duplicate registration rejected",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/volunteer",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "event_id",
+                  "value": "{{eventID}}",
+                  "type": "text"
+                },
+                {
+                  "key": "hours",
+                  "value": "{{validHours}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get(\"eventID\"); if (!id || id.startsWith(\"SET_\")) throw new Error(\"Set eventID to an available volunteer event ID before running this request\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Duplicate HTTP 400\",()=>pm.response.to.have.status(400));",
+                  "pm.test(\"Duplicate error\",()=>pm.expect(pm.response.text()).to.include(\"You are already registered for this event\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-07 · Unregister restores availability",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/registered-events/{{eventID}}/unregister",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get(\"eventID\"); if (!id || id.startsWith(\"SET_\")) throw new Error(\"Set eventID to an available volunteer event ID before running this request\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unregister redirects\",()=>pm.response.to.have.status(303));",
+                  "pm.test(\"Redirect to registrations\",()=>pm.expect(pm.response.headers.get(\"Location\")||\"\").to.include(\"/registered-events\"));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "API-RG-08 · Registration absent after unregister",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/registered-events",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Selected registration removed\",()=>{const s=pm.response.text();const id=pm.environment.get(\"eventID\");pm.expect(s).not.to.match(new RegExp(\"<strong>Event ID:</strong>\\\\s*\"+id+\"(?:\\\\D|$)\"));});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ],
+      "description": "Run after folder 02 in order: create, read, reject duplicate, unregister, verify absence. If interrupted after registration, manually unregister this event through the registered-events form before rerunning."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://faststarter-9c75.onrender.com",
+      "type": "string"
+    }
+  ]
+}

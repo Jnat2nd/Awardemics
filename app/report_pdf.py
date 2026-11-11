@@ -107,12 +107,17 @@ class ReportHTML2FPDF(HTML2FPDF):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         super().handle_starttag(tag, attrs)
         if tag == "table" and self.table is not None:
-            self.table._headings_style = FontFace(emphasis="BOLD", color="#FFFFFF")
+            self.table._headings_style = FontFace(
+                emphasis="BOLD",
+                color="#FFFFFF",
+                fill_color=NAVY_HEX,
+            )
 
 
 class ReportPDF(FPDF):
     HTML2FPDF_CLASS = ReportHTML2FPDF
     incomplete = False
+    assignment_title = "COMP 3613 Assignment 1"
 
     def header(self) -> None:
         if self.page_no() == 1:
@@ -123,7 +128,7 @@ class ReportPDF(FPDF):
             self.set_text_color(255, 255, 255)
             self.set_font("Body", "B", 20)
             self.set_xy(self.l_margin, 9)
-            self.cell(self.epw, 10, "COMP 3613 Assignment 1")
+            self.cell(self.epw, 10, self.assignment_title)
             self.set_font("Body", "", 11)
             self.set_xy(self.l_margin, 20)
             subtitle = "Individual report (incomplete)" if self.incomplete else "Individual report"
@@ -135,7 +140,7 @@ class ReportPDF(FPDF):
         self.set_y(10)
         self.set_font("Body", "", 9)
         self.set_text_color(*NAVY)
-        self.cell(self.epw, 6, "COMP 3613 Assignment 1", new_x="LMARGIN", new_y="NEXT")
+        self.cell(self.epw, 6, self.assignment_title, new_x="LMARGIN", new_y="NEXT")
         self.ln(1.5)
         self.set_draw_color(*GOLD)
         self.set_line_width(0.5)
@@ -470,9 +475,14 @@ def replace_competency_section(markdown: str, judge_markdown: str) -> str:
     return text
 
 
-def _new_pdf(incomplete: bool) -> ReportPDF:
+def _new_pdf(
+    incomplete: bool,
+    *,
+    assignment_title: str = "COMP 3613 Assignment 1",
+) -> ReportPDF:
     pdf = ReportPDF(format="A4")
     pdf.incomplete = incomplete
+    pdf.assignment_title = assignment_title
     pdf.alias_nb_pages()
     pdf.set_auto_page_break(auto=True, margin=20)
     pdf.set_margins(16, 28, 16)
@@ -546,6 +556,14 @@ def _write_report_html(pdf: ReportPDF, markup: str) -> None:
                 color=NAVY_HEX,
                 font_size_pt=11,
                 t_margin=3.0,
+                b_margin=0.04,
+            ),
+            "h4": TextStyle(
+                font_family="Body",
+                font_style="B",
+                color=NAVY_HEX,
+                font_size_pt=10.5,
+                t_margin=2.5,
                 b_margin=0.04,
             ),
             "p": TextStyle(font_family="Body", font_size_pt=10.5, t_margin=0.7, b_margin=0.9),
@@ -692,11 +710,13 @@ def _markdown_to_html(markdown: str, base: Path, tmp: Path) -> str:
                 i += 1
                 continue
             skip_first_h1 = False
-            tag = f"h{min(level, 3)}"
+            tag = f"h{min(level, 4)}"
             lower = text.lower()
             if "competency" in lower:
                 parts.append('<p style="break-before: page"></p>')
-            parts.append(f"<{tag}>{_inline_html(text)}</{tag}>")
+            parts.append(
+                f'<{tag}><font color="{NAVY_HEX}"><b>{_inline_html(text)}</b></font></{tag}>'
+            )
         elif kind == "paragraph":
             parts.append(f'<p style="line-height: 1.35">{_inline_html(blocks[i][1])}</p>')
         elif kind == "list":
@@ -794,7 +814,7 @@ def _table_html(rows: list[list[str]]) -> str:
         width_attr = f' width="{width}%"' if width else ""
         align = "center" if index in center else "left"
         head_cells.append(
-            f'<th{width_attr} align="{align}">'
+            f'<th{width_attr} align="{align}" bgcolor="{NAVY_HEX}">'
             f'<font color="#FFFFFF"><b>{_cell_html(cell)}</b></font></th>'
         )
     body_rows = []
@@ -956,7 +976,7 @@ def _blocks(markdown: str) -> list[tuple]:
             blocks.append(("image", image.group(1).strip()))
             i += 1
             continue
-        heading = re.match(r"^(#{1,3})\s+(.+)$", line)
+        heading = re.match(r"^(#{1,6})\s+(.+)$", line)
         if heading:
             flush()
             blocks.append(("heading", len(heading.group(1)), heading.group(2).strip()))
